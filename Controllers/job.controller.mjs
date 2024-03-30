@@ -68,13 +68,13 @@ const getJobWithId = async (req, res) => {
 const applyJob = async (req, res) => {
     try {
         const { user_id, job_id, userForm } = req.body
-        console.log(await jobDB.updateOne({ _id: new Types.ObjectId(job_id) }, {
+        await jobDB.updateOne({ _id: new Types.ObjectId(job_id) }, {
             $addToSet:{
                 pending: new Types.ObjectId(user_id)
             }
-        }))
-        userForm.job_id = job_id
-        userForm.user_id = user_id
+        })
+        userForm.job_id = new Types.ObjectId(job_id)
+        userForm.user_id = new Types.ObjectId(user_id)
         await applyDB.create(userForm)
         return res.status(200).send({ status: "OK", message: "updated"})
     } catch (err) {
@@ -83,4 +83,29 @@ const applyJob = async (req, res) => {
     }
 }
 
-export default { postJob, getJobs, getJobWithId, applyJob }
+const getAppliedList = async (req, res) => {
+    try {
+        const { user_id } = req.query
+        const response = await applyDB.aggregate([
+            {
+                $match: {
+                    user_id: new Types.ObjectId(user_id)
+                }
+            }, {
+                $lookup: {
+                    from: "jobs",
+                    localField: "job_id",
+                    foreignField: "_id",
+                    as: "job_info"
+                }
+            }
+
+        ])
+        return res.status(200).send({ result: response})
+    } catch (err) {
+        console.log(err.message);
+        return res.status(500).send({message: "Internal server error"})
+    }
+}
+
+export default { postJob, getJobs, getJobWithId, applyJob, getAppliedList }

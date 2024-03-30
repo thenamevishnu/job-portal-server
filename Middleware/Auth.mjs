@@ -14,7 +14,8 @@ export const Auth = async (req, res, next) => {
                 next()
             }
         }
-    }catch(err){
+    } catch (err) {
+        console.log(err)
         return res.status(500).send({ message: "internal server error" })
     }
 }
