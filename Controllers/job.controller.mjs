@@ -23,7 +23,7 @@ const getJobs = async (req, res) => {
         const regexp = new RegExp(`${filter}`,`i`)
         let obj = {}
         if (filter) {
-            obj = {$or:[{title: {$regex: regexp}, description: {$regex: regexp}}]}
+            obj = {$or:[{title: {$regex: regexp}},{description: {$regex: regexp}},{location: {$regex: regexp}}]}
         }
         const response = await jobDB.find(obj).skip(skip).limit(3)
         const total = await jobDB.countDocuments(obj)
@@ -55,7 +55,6 @@ const getJobWithId = async (req, res) => {
             }
 
         ])
-        console.log(response);
         if(response.length > 0){
             return res.status(200).send({ result: response[0] })
         }
